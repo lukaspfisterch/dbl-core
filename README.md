@@ -4,6 +4,32 @@ Deterministic Boundary Layer on top of KL Kernel Logic.
 
 DBL Core evaluates governance boundaries for operations before they are executed by `KL Kernel Logic`.
 
+## Project Positioning
+
+`dbl-core` is the minimal deterministic boundary engine within the [Deterministic Boundary Layer (DBL)](https://github.com/lukaspfisterch/dbl) architecture.
+
+**Layer structure:**
+
+```
+┌─────────────────────────────────────────────────┐
+│  Application / Gateway                          │
+├─────────────────────────────────────────────────┤
+│  DBL (rules, pipelines, policies, bindings)     │
+├─────────────────────────────────────────────────┤
+│  dbl-core (this repo)                           │
+├─────────────────────────────────────────────────┤
+│  kl-kernel-logic (execution substrate)          │
+└─────────────────────────────────────────────────┘
+```
+
+- [`kl-kernel-logic`](https://github.com/lukaspfisterch/kl-kernel-logic) - deterministic execution substrate (Δ, V, t)
+- `dbl-core` - minimal boundary evaluation engine
+- [`dbl`](https://github.com/lukaspfisterch/deterministic-boundary-layer) - full boundary layer with rules, pipelines, policies, gateway bindings
+
+This structure follows [KL Execution Theory](https://github.com/lukaspfisterch/kl-execution-theory).
+
+<!-- Architecture diagram will be inserted here in the main DBL repo -->
+
 ## Install
 
 ```bash
