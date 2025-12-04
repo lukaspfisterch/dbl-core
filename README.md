@@ -102,6 +102,41 @@ Fields:
 
 In the current default implementation DBL Core produces a single PolicyDecision with outcome "allow". The structure is designed for later composition of multiple policies.
 
+## Usage with KL Kernel Logic
+
+```python
+from kl_kernel_logic import PsiDefinition, Kernel
+from dbl_core import BoundaryContext, DBLCore
+
+# 1) Caller builds PsiDefinition + BoundaryContext
+psi = PsiDefinition(psi_type="llm", name="generate")
+ctx = BoundaryContext(psi=psi, caller_id="user-1", metadata={"prompt": "..."})
+
+# 2) DBL Core evaluates boundaries
+core = DBLCore(config={"limit.default": 100})
+result = core.evaluate(ctx)
+
+if not result.is_allowed():
+    # handle block
+    print(result.final_outcome, result.decisions[0].reason)
+else:
+    # 3) Kernel executes with effective_psi and effective_metadata
+    kernel = Kernel()
+    trace = kernel.execute(
+        psi=result.effective_psi,
+        task=my_task_fn,
+        **result.effective_metadata,
+    )
+```
+
+DBL sits before the kernel and shapes the input. The kernel only sees the effective values.
+
+## Design
+
+- DBL Core is pure, stateless per call
+- No hidden state, no side effects outside BoundaryResult
+- All policy decisions are observable via PolicyDecision and BoundaryResult
+
 ## Guarantees
 
 - No mutation of the input BoundaryContext
