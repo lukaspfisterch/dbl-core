@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "dbl-core"
-version = "0.1.0"
+version = "0.2.0"
 description = "Deterministic Boundary Layer on KL Kernel Logic"
 authors = [
   { name = "Lukas Pfister", email = "228201683+lukaspfisterch@users.noreply.github.com" }
@@ -33,4 +33,7 @@ where = ["src"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
+markers = [
+    "stress: long-running or high-load tests",
+]
 
