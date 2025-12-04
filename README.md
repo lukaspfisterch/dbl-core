@@ -1,142 +1,115 @@
 # DBL Core
 
-**Deterministic Boundary Layer on KL Kernel Logic 0.4.0**
+Deterministic Boundary Layer on top of KL Kernel Logic.
 
----
+DBL Core evaluates governance boundaries for operations before they are executed by the KL kernel.
 
-## Architecture
+## Install
 
-```
-┌─────────────────────────────────────────┐
-│  DBL Gateways / Runtimes                │
-│  (LLM Gateway, Tool Gateway, API)       │
-├─────────────────────────────────────────┤
-│  DBL Core                               │
-│  (Session, Policy, Shadow State, Flows) │
-├─────────────────────────────────────────┤
-│  KL Kernel Logic 0.4.0                  │
-│  (Δ, V, t only)                         │
-└─────────────────────────────────────────┘
+```bash
+pip install dbl-core
 ```
 
----
+Requires `kl-kernel-logic>=0.4.0` and Python 3.11+.
 
-## Core Concepts
+## API
 
-### DblSession
+### BoundaryContext
 
-Container for everything the Kernel does not know.
+Input context for DBL evaluation.
 
-- `run_id`: unique identifier
-- `created_at`: UTC timestamp
-- `caller`: user, system, tenant
-- `context`: structured dict
-- `shadow_state`: risk, confidence, mode
-- `traces`: list of ExecutionTrace from Kernel
-- `tags`: set of strings
+```python
+from dbl_core import BoundaryContext
+from kl_kernel_logic import PsiDefinition
 
-### DblTask
-
-Abstract execution unit that uses Kernel internally.
-
-Types:
-- `LlmTask`: LLM API calls
-- `ToolTask`: Tool execution
-- `HttpTask`: External HTTP calls
-- `CompositeTask`: Plans using CAEL internally
-
-Interface:
-- `build_psi(session) -> PsiDefinition`
-- `build_callable(session) -> Callable`
-- `build_kwargs(session) -> dict`
-- `postprocess(session, trace) -> Any`
-
-### PolicyEngine
-
-Central policy hook for DBL.
-
-- `before_execute(session, task) -> PolicyDecision`
-- `after_execute(session, task, trace) -> None`
-
-PolicyDecision:
-- `action`: ALLOW | DENY | MODIFY | SIMULATE
-- `reason`: explanation
-- `modified_task`: optional replacement
-
-### ShadowState
-
-DBL-internal adaptive state, not visible to Kernel.
+psi = PsiDefinition(psi_type="llm", name="generate")
+ctx = BoundaryContext(
+    psi=psi,
+    caller_id="user-1",
+    tenant_id="tenant-1",
+    channel="api",
+    metadata={"key": "value"},
+)
+```
 
 Fields:
-- `risk_score`
-- `confidence`
-- `guard_mode`: normal, strict, readonly
-- `llm_temperature_cap`
-- `tool_usage_mode`: allowed, restricted, off
 
-### ExecutionPlan / DblFlow
+- `psi: PsiDefinition` - operation identifier
+- `caller_id: str | None`
+- `tenant_id: str | None`
+- `channel: str | None`
+- `metadata: Mapping[str, Any]` - arbitrary, read only from the caller perspective
 
-Higher orchestration layer above CAEL.
+BoundaryContext is immutable. DBL Core never mutates the instance or its metadata.
 
-- List of `DblStep`
-- Conditions based on shadow state or previous results
-- Internally converts to `(psi, callable, kwargs)` for CAEL
+### DBLCore
 
----
+Central entrypoint for boundary evaluation. Returns a BoundaryResult.
 
-## Module Structure
+```python
+from dbl_core import DBLCore
 
-```
-dbl_core/
-  core/
-    session.py         # DblSession
-    task.py            # DblTask, LlmTask, ToolTask
-    flow.py            # ExecutionPlan, DblStep
-    shadow_state.py    # ShadowState, ShadowStateController
-  policy/
-    engine.py          # PolicyEngine, PolicyDecision
-    rules.py           # Predefined rules
-  adapters/
-    llm.py             # LLM adapter base
-    tool.py            # Tool adapter base
-    http.py            # HTTP adapter base
-  audit/
-    recorder.py        # DblAuditLog
-  runtime/
-    gateway.py         # Sync orchestrator
+core = DBLCore(config={"limit.default": 100})
+result = core.evaluate(ctx)
+
+if result.is_allowed():
+    # proceed with kernel execution
+    pass
 ```
 
----
+Methods:
 
-## Dependency
+- `evaluate(context: BoundaryContext) -> BoundaryResult`
+- `describe_config() -> Mapping[str, Any]` - copy of the current configuration, safe for logging and diagnostics
 
+### BoundaryResult
+
+Aggregated evaluation result.
+
+```python
+result.final_outcome        # "allow" | "modify" | "block"
+result.is_allowed()         # True if "allow" or "modify"
+result.effective_psi        # PsiDefinition to use after policies
+result.effective_metadata   # deep copy, no alias to context.metadata
+result.decisions            # list[PolicyDecision]
+result.context              # original BoundaryContext
+result.describe()           # stable dict for audit and logging
 ```
-dbl-core depends on kl-kernel-logic >= 0.4.0
+
+The `effective_*` fields represent the state after all policies have been applied.
+
+### PolicyDecision
+
+Single policy evaluation step.
+
+```python
+from dbl_core import PolicyDecision
+
+decision = PolicyDecision(
+    outcome="allow",
+    reason="passed all checks",
+    details={"policy_chain": ["rate-limit", "content-filter"]},
+)
 ```
 
-DBL Core calls Kernel. Nothing flows back into Kernel.
+Fields:
 
----
+- `outcome: Literal["allow", "modify", "block"]`
+- `reason: str` - human readable explanation
+- `details: Mapping[str, Any]` - structured metadata for diagnostics or audit
+- `modified_psi: PsiDefinition | None` - optional override of the original psi
+- `modified_metadata: Mapping[str, Any] | None` - optional metadata override for this step
 
-## Execution Flow
+In the current default implementation DBL Core produces a single PolicyDecision with outcome "allow". The structure is designed for later composition of multiple policies.
 
-1. Create session: `session = DblSession(...)`
-2. Define flow: `plan = ExecutionPlan([...DblStep...])`
-3. Run via gateway: `result = gateway.run(plan, session)`
+## Guarantees
 
-Gateway internally:
-- Iterates over steps
-- Calls `PolicyEngine.before_execute()`
-- Builds psi, callable, kwargs via DblTask
-- Calls `Kernel.execute()`
-- Updates `session.shadow_state`
-- Appends trace to `session.traces`
-- Calls `PolicyEngine.after_execute()`
-- Records to AuditLog
-
----
+- No mutation of the input BoundaryContext
+- `effective_metadata` is a deep copy, no aliasing back into `context.metadata`
+- Thread safe evaluation for a shared DBLCore instance
+- Deterministic output for identical input
+- `describe()` returns stable, serializable snapshots suitable for logging and audit
 
 ## License
 
 MIT
-
