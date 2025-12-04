@@ -2,7 +2,7 @@
 
 Deterministic Boundary Layer on top of KL Kernel Logic.
 
-DBL Core evaluates governance boundaries for operations before they are executed by the KL kernel.
+DBL Core evaluates governance boundaries for operations before they are executed by `KL Kernel Logic`.
 
 ## Install
 
@@ -40,7 +40,7 @@ Fields:
 - `channel: str | None`
 - `metadata: Mapping[str, Any]` - arbitrary, read only from the caller perspective
 
-BoundaryContext is immutable. DBL Core never mutates the instance or its metadata.
+`BoundaryContext` is immutable. DBL Core never mutates the instance or its metadata.
 
 ### DBLCore
 
@@ -131,6 +131,8 @@ else:
 
 DBL sits before the kernel and shapes the input. The kernel only sees the effective values.
 
+Note: The `Kernel.execute()` call above is illustrative. See `kl-kernel-logic` for the actual API.
+
 ## Design
 
 - DBL Core is pure, stateless per call
@@ -147,4 +149,4 @@ DBL sits before the kernel and shapes the input. The kernel only sees the effect
 
 ## License
 
-MIT
+[MIT](LICENSE)
