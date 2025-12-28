@@ -1,18 +1,22 @@
-from dbl_core import DblEvent, DblEventKind, normalize_trace
-from kl_kernel_logic import Kernel, PsiDefinition
+from dbl_core import DblEvent, DblEventKind
+from dbl_core.events.trace_digest import trace_digest
 
 
 def test_observational_ignored_in_digest():
-    psi = PsiDefinition(psi_type="test", name="op")
-    kernel = Kernel(deterministic_mode=True)
-    trace = kernel.execute(psi=psi, task=lambda: "ok")
-    trace_dict, trace_digest = normalize_trace(trace)
+    trace = {"a": 1}
+    base = {"trace": trace, "trace_digest": trace_digest(trace)}
 
-    base = {"trace": trace_dict, "trace_digest": trace_digest}
-    event_a = DblEvent(DblEventKind.EXECUTION, correlation_id="c1", data=base)
+    event_a = DblEvent(
+        DblEventKind.EXECUTION,
+        correlation_id="c1",
+        data=base,
+        observational={"note": "one"},
+    )
     event_b = DblEvent(
         DblEventKind.EXECUTION,
         correlation_id="c1",
-        data={"trace": {**trace_dict, "error": "changed"}, "trace_digest": trace_digest},
+        data=base,
+        observational={"note": "two"},
     )
+
     assert event_a.digest() == event_b.digest()

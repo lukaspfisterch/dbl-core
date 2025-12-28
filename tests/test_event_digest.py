@@ -1,6 +1,7 @@
 import pytest
 
 from dbl_core import DblEvent, DblEventKind
+from dbl_core.events.trace_digest import trace_digest
 
 
 def test_event_digest_stability():
@@ -21,26 +22,15 @@ def test_event_digest_stability():
 
 def test_execution_event_wrong_trace_digest_raises():
     data = {
-        "trace": {
-            "psi": {"psi_type": "x", "name": "y", "metadata": {}},
-            "success": True,
-            "failure_code": "OK",
-            "exception_type": None,
-        },
+        "trace": {"a": 1},
         "trace_digest": "bad",
     }
     with pytest.raises(TypeError, match="trace_digest mismatch"):
         DblEvent(DblEventKind.EXECUTION, correlation_id="c1", data=data)
 
 
-def test_execution_event_missing_core_field_raises():
-    data = {
-        "trace": {
-            "psi": {"psi_type": "x", "name": "y", "metadata": {}},
-            "success": True,
-            "failure_code": "OK",
-        },
-        "trace_digest": "x",
-    }
-    with pytest.raises(TypeError, match="missing required field"):
-        DblEvent(DblEventKind.EXECUTION, correlation_id="c1", data=data)
+def test_execution_event_trace_digest_matches_full_trace():
+    trace = {"a": 1, "b": {"c": 2}}
+    data = {"trace": trace, "trace_digest": trace_digest(trace)}
+    e = DblEvent(DblEventKind.EXECUTION, correlation_id="c1", data=data)
+    assert e.digest() == e.digest()

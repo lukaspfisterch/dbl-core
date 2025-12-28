@@ -6,7 +6,7 @@ from typing import Any, ClassVar, Mapping, Optional
 
 from .canonical import canonicalize_value, freeze_value, json_dumps, digest_bytes
 from ..gate.model import GateDecision
-from .trace_digest import trace_core_digest
+from .trace_digest import trace_digest
 
 
 class DblEventKind(str, Enum):
@@ -28,25 +28,45 @@ class DblEvent:
         "correlation_id",
         "data",
     )
-    OBSERVATIONAL_FIELDS: ClassVar[tuple[str, ...]] = (
-        "observational",
-    )
+    OBSERVATIONAL_FIELDS: ClassVar[tuple[str, ...]] = ("observational",)
 
     def __post_init__(self) -> None:
+        if not isinstance(self.correlation_id, str) or not self.correlation_id:
+            raise TypeError("correlation_id must be a non-empty string")
+
+        if isinstance(self.data, GateDecision):
+            canonicalize_value(self.data.to_dict(include_observational=True))
+        elif self.data is not None:
+            canonicalize_value(self.data)
+        if self.observational is not None:
+            canonicalize_value(self.observational)
+
+        if self.event_kind == DblEventKind.DECISION:
+            if isinstance(self.data, Mapping):
+                if len(self.data) == 0:
+                    raise TypeError("DECISION event data must be non-empty")
+            elif isinstance(self.data, GateDecision):
+                pass
+            else:
+                raise TypeError("DECISION event data must be a Mapping or GateDecision")
+
         if self.event_kind == DblEventKind.EXECUTION:
             if not isinstance(self.data, Mapping):
                 raise TypeError("EXECUTION event data must be a Mapping")
-            if "trace_digest" not in self.data or not isinstance(self.data["trace_digest"], str):
-                raise TypeError("EXECUTION event data requires trace_digest: str")
+            if "trace_digest" not in self.data or not isinstance(self.data["trace_digest"], str) or not self.data["trace_digest"]:
+                raise TypeError("EXECUTION event data requires trace_digest: non-empty str")
             if "trace" not in self.data or not isinstance(self.data["trace"], Mapping):
                 raise TypeError("EXECUTION event data requires trace: Mapping")
+
             trace = self.data["trace"]
             try:
-                core_digest = trace_core_digest(trace)
-            except ValueError as exc:
+                actual = trace_digest(trace)
+            except Exception as exc:
                 raise TypeError(str(exc)) from exc
-            if core_digest != self.data["trace_digest"]:
+
+            if actual != self.data["trace_digest"]:
                 raise TypeError("EXECUTION event trace_digest mismatch")
+
         object.__setattr__(self, "data", freeze_value(self.data))
         if self.observational is not None:
             object.__setattr__(self, "observational", freeze_value(self.observational))
@@ -54,6 +74,7 @@ class DblEvent:
     def _data_for_dict(self, *, include_observational: bool) -> Any:
         if isinstance(self.data, GateDecision):
             return self.data.to_dict(include_observational=include_observational)
+
         if isinstance(self.data, Mapping):
             data = canonicalize_value(self.data)
             if (
@@ -66,6 +87,7 @@ class DblEvent:
                 filtered.pop("trace", None)
                 return filtered
             return data
+
         return canonicalize_value(self.data)
 
     def to_dict(self, *, include_observational: bool = True) -> dict[str, Any]:

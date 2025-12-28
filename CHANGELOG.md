@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.1] - 2025-12-28
+
+- Documentation sync: canonicalization rejects non-str mapping keys and all floats
+- Documentation sync: sets restricted to primitive-only values with deterministic ordering
+- Documentation sync: unknown object types forbidden, no implicit to_dict admission
+- Documentation sync: trace_digest is over sanitized trace mapping after timing-key stripping
+
 ## [0.3.0] - 2025-12-26
 
 - Breaking: refocused DBL Core as deterministic event substrate

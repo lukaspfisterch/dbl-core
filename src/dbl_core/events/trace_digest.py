@@ -5,17 +5,15 @@ from typing import Any, Mapping
 from .canonical import canonicalize_value, json_dumps, digest_bytes
 
 
-def trace_core_digest(trace_dict: Mapping[str, Any]) -> str:
-    required = ("psi", "success", "failure_code", "exception_type")
-    for key in required:
-        if key not in trace_dict:
-            raise ValueError(f"trace missing required field: {key}")
-    if not isinstance(trace_dict["psi"], Mapping):
-        raise ValueError("trace field psi must be a Mapping")
-    core = {
-        "psi": trace_dict["psi"],
-        "success": trace_dict["success"],
-        "failure_code": trace_dict["failure_code"],
-        "exception_type": trace_dict["exception_type"],
-    }
-    return digest_bytes(json_dumps(canonicalize_value(core)))
+def trace_digest(trace_dict: Mapping[str, Any]) -> str:
+    """
+    Canonical integrity digest for a trace artifact.
+
+    Contract:
+    - This is not domain semantics.
+    - It is sha256 over canonical JSON bytes of the fully canonicalized trace mapping.
+    """
+    canonical = canonicalize_value(trace_dict)
+    if not isinstance(canonical, Mapping):
+        raise TypeError("trace must canonicalize to a Mapping")
+    return digest_bytes(json_dumps(canonical))

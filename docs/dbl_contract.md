@@ -1,66 +1,125 @@
-# DBL Core Contract (v0.3.0)
+# DBL Core Contract (v0.3.x)
 
-This contract defines the deterministic event substrate for DBL Core. It is normative and contract-stable.
+This contract defines the deterministic event substrate for DBL Core.
+It is normative for dbl-core and contract-stable.
+
+## Scope
+dbl-core provides:
+- A minimal DBL event model (INTENT, DECISION, EXECUTION, PROOF).
+- Deterministic canonicalization and digests.
+- An append-only ordered behavior stream V with deterministic replay of the normative projection.
+
+dbl-core does not provide:
+- Policy semantics, templates, orchestration, or execution.
+- Any interpretation of trace meaning beyond canonicalization integrity.
+- I/O side effects, randomness, time-based ordering, or background processing.
 
 ## Inputs
-- DBL events representing intent, decisions, executions, and proofs.
-- Kernel ExecutionTrace objects or canonical trace dicts for EXECUTION events.
+- DBL events: INTENT, DECISION, EXECUTION, PROOF.
+- For EXECUTION events: a canonical trace representation (canonical dict or canonical bytes) plus a trace_digest.
 
 ## Outputs
-- Canonical DBL events and behavior streams with deterministic digests.
-- Deterministic t_index derived solely from event order.
+- Canonical DBL event representations (dict and JSON).
+- Event digests derived only from deterministic fields.
+- Behavior stream V = [e0, e1, e2, ...] where t_index is derived solely from order in V.
+- BehaviorV digest derived from ordered event digests.
 
 ## Non-Goals
-- No policy engine, templates, or orchestration.
+- No policy engine, no domain validation, no convenience APIs that coerce inputs.
 - No execution of user tasks.
 - No time, randomness, or I/O side effects.
 
 ## Event Stream V
 - DBL behavior is a single ordered stream: V = [e0, e1, e2, ...].
 - t_index is the position in V (0..n-1).
-- Ordering MUST be derived from index, not timestamps.
+- Ordering MUST be derived from index, not timestamps or wall-clock time.
+- V MUST be append-only:
+  - No reorder
+  - No delete
+  - No compaction or optimization that changes order or content
 
 ## Event Kinds
-- INTENT: proposed execution package (psi and input descriptors).
-- DECISION: gate decision ALLOW or DENY with stable reason_code.
-- EXECUTION: embeds a kernel ExecutionTrace as immutable fact.
-- PROOF: placeholder for derived proofs (no intelligence in core).
+- INTENT: records proposed execution context and authoritative input descriptors.
+- DECISION: records a normative decision outcome.
+- EXECUTION: records an execution trace artifact (observational).
+- PROOF: records evidence artifacts (observational).
 
-## DENY is a Delta
-- DENY is represented as a DECISION event.
-- If DENY occurs, no EXECUTION event exists for that correlation chain.
+Only DECISION is normative. All other kinds are non-normative.
 
-## Kernel Trace Embedding
-- EXECUTION event data MUST embed:
-  - trace: canonical trace dict
-  - trace_digest: deterministic digest of the trace
-- DBL Core MUST NOT call Kernel.execute().
-- DBL Core MUST verify trace_digest against the deterministic core fields:
-  - psi, success, failure_code, exception_type
-- trace_digest MUST equal sha256(json_dumps(canonicalize(core))) where core is:
-  - {psi, success, failure_code, exception_type}
+## DENY is a DECISION
+- DENY MUST be represented as a DECISION event.
+- If a DECISION outcome is DENY, no corresponding EXECUTION event may exist for that correlation chain.
 
-## Canonicalization and Digest
-- DblEvent.to_dict() MUST return a canonical mapping.
-- DblEvent.to_json() MUST return canonical JSON (sorted keys, stable encoding).
-- DblEvent.digest() MUST hash canonical JSON of deterministic fields.
-- BehaviorV.digest() MUST hash the ordered list of event digests.
+## Deterministic vs Observational Fields
 
-## Observational Fields
-- Observational fields MUST NOT be used for ordering or semantic claims.
-- Observational fields MUST be excluded from event digests.
-- Examples: timestamps, runtime, error text, exception repr.
+### Deterministic segment
+The deterministic segment of an event consists of:
+- event_kind
+- correlation_id
+- deterministic payload (a JSON-safe structure restricted to allowed types)
+- refs (if present, treated as deterministic structure)
+
+### Observational segment
+Observational fields include, but are not limited to:
+- timestamps
+- runtime or latency
+- telemetry or metrics
+- error text, exception repr
+- non-deterministic execution outputs not explicitly admitted into the deterministic segment
+
+Observational fields MUST NOT:
+- influence event digests
+- influence ordering
+- be interpreted as semantic claims by dbl-core
+
+## Canonicalization and Digests
+
+### Canonical dict
+- DblEvent.to_dict() MUST return a canonical mapping with a stable key order.
+- The canonical dict MUST include both deterministic and observational segments, but canonicalization rules MUST be defined such that digests exclude observational data.
+
+### Canonical JSON
+- DblEvent.to_json() MUST serialize canonical dict deterministically:
+  - sorted keys
+  - stable separators
+  - UTF-8 encoding
+  - allow_nan = False (reject NaN and Infinity)
+  - floats MUST be rejected in canonicalization
+
+### Canonicalization rules (strict)
+- Mapping keys MUST be str. Non-str keys are INVALID_EVENT.
+- Floats MUST be rejected everywhere in canonicalized values.
+- Sets are allowed only if elements are JSON primitives (str, int, bool, None) and MUST be deterministically ordered.
+- Unknown object types MUST be rejected. There is no implicit to_dict admission.
+- Non-serializable values MUST raise TypeError.
+- Observational fields MUST be canonicalizable even though they are excluded from digests.
+
+### Event digest
+- DblEvent.digest() MUST be sha256 over canonical JSON bytes of the deterministic segment only.
+
+### BehaviorV digest
+- BehaviorV.digest() MUST be sha256 over the ordered list of event digests.
+- The BehaviorV digest MUST change if and only if the ordered deterministic event history changes.
+
+## EXECUTION Trace Embedding
+- EXECUTION events MUST embed:
+  - trace: canonical trace dict (or canonical trace bytes)
+  - trace_digest: sha256 over canonical JSON bytes of the sanitized trace mapping
+- dbl-core MUST NOT call Kernel.execute().
+- dbl-core MUST validate trace integrity only as:
+  - sha256(canonical JSON bytes of sanitized trace mapping) == trace_digest
+- dbl-core MUST NOT validate domain semantics of trace fields.
 
 ## Failure Taxonomy
-- INVALID_EVENT: malformed event or missing required fields.
-- INVALID_TRACE: missing or invalid trace or trace_digest.
+dbl-core MAY raise typed errors, but must at minimum distinguish:
+- INVALID_EVENT: malformed event, missing required fields, invalid kind, invalid deterministic payload types
+- INVALID_TRACE: missing trace, non-canonical trace, trace_digest mismatch
 
-## Determinism
-- Deterministic fields are event_kind, correlation_id, and data (excluding observational trace data).
-- Observational fields are excluded from digest and MUST NOT affect decisions.
+## Determinism Guarantees
+- Changing observational fields MUST NOT change event digests.
+- Changing observational fields MUST NOT change BehaviorV digest.
+- Replaying V in order MUST yield the same normative projection (DECISION subsequence), independent of observational variation.
 
 ## Normative References
-- KL Execution Theory v0.1.0
-  https://github.com/lukaspfisterch/kl-execution-theory
-- KL Kernel Logic v0.5.0
-  https://github.com/lukaspfisterch/kl-kernel-logic
+- KL Kernel Logic (library dependency)
+- DBL Paper (conceptual model and invariants)
