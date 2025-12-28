@@ -78,7 +78,3 @@ Requires kl-kernel-logic>=0.5.0 and Python 3.11+.
 ## Ordering
 Ordering is derived from t_index (position in V). Timestamps and runtime fields are observational only.
 
-## License
-MIT License. See LICENSE.
-
-
