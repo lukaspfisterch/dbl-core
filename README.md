@@ -56,11 +56,11 @@ DBL Core behavior is defined by a stable, normative contract.
 - Domain-specific semantics are explicitly out of scope.
 
 See:
-- docs/dbl_contract.md
-- docs/dbl_contract_domainrunner.md
+- [DBL Core Contract](docs/dbl_contract.md)
+- [Domainrunner Contract](docs/dbl_contract_domainrunner.md)
 
 ## Contract
-- docs/dbl_contract.md
+- [DBL Core Contract](docs/dbl_contract.md)
 
 ## Install
 
