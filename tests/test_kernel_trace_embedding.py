@@ -1,5 +1,6 @@
-from dbl_core import DblEvent, DblEventKind, normalize_trace
 from kl_kernel_logic import Kernel, PsiDefinition
+
+from dbl_core import DblEvent, DblEventKind, normalize_trace
 
 
 def test_kernel_trace_embedding():

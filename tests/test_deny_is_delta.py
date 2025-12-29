@@ -1,4 +1,4 @@
-from dbl_core import DblEvent, DblEventKind, BehaviorV, GateDecision
+from dbl_core import BehaviorV, DblEvent, DblEventKind, GateDecision
 
 
 def test_deny_is_delta():

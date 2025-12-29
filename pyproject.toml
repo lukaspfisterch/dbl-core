@@ -9,9 +9,7 @@ description = "Deterministic Boundary Layers core substrate on KL Kernel Logic"
 readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.11"
-authors = [
-  { name = "Lukas Pfister", email = "228201683+lukaspfisterch@users.noreply.github.com" }
-]
+authors = [{ name = "Lukas Pfister", email = "228201683+lukaspfisterch@users.noreply.github.com" }]
 keywords = ["dbl", "deterministic", "audit", "event-log", "governance"]
 classifiers = [
   "Development Status :: 2 - Pre-Alpha",
@@ -22,41 +20,35 @@ classifiers = [
   "Programming Language :: Python :: 3.12",
   "Typing :: Typed",
 ]
-dependencies = [
-  "kl-kernel-logic>=0.5.0,<0.6.0",
-]
+dependencies = ["kl-kernel-logic>=0.5.0,<0.6.0"]
 
 [project.urls]
 Repository = "https://github.com/lukaspfisterch/dbl-core"
 Issues = "https://github.com/lukaspfisterch/dbl-core/issues"
 
 [tool.setuptools]
-package-dir = {"" = "src"}
+package-dir = { "" = "src" }
 
 [tool.setuptools.packages.find]
 where = ["src"]
 include = ["dbl_core*"]
 
+[tool.setuptools.package-data]
+dbl_core = ["py.typed"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
-markers = [
-  "stress: long-running or high-load tests",
-]
-addopts = [
-  "-q",
-  "--strict-markers",
-  "--strict-config",
-]
+addopts = ["-q", "--strict-markers", "--strict-config"]
+markers = ["stress: long-running or high-load tests"]
 
 [tool.ruff]
 target-version = "py311"
 line-length = 100
-extend-select = ["I"]  # import sorting
 fix = true
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "W", "UP", "B"]
+select = ["E", "F", "W", "I", "UP", "B"]
 ignore = ["E203"]
 
 [tool.mypy]
@@ -64,15 +56,4 @@ python_version = "3.11"
 mypy_path = ["src"]
 strict = true
 warn_unreachable = true
-no_implicit_optional = true
-disallow_any_generics = true
-disallow_subclassing_any = true
-disallow_untyped_defs = true
-disallow_incomplete_defs = true
-check_untyped_defs = true
-warn_return_any = true
-warn_unused_ignores = true
 show_error_codes = true
-
-[tool.setuptools.package-data]
-dbl_core = ["py.typed"]

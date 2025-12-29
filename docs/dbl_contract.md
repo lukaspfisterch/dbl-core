@@ -105,6 +105,16 @@ Observational fields MUST NOT:
 - EXECUTION events MUST embed:
   - trace: canonical trace dict (or canonical trace bytes)
   - trace_digest: sha256 over canonical JSON bytes of the sanitized trace mapping
+- Trace sanitization removes observational timing/perf keys prior to trace_digest.
+- Observational trace keys (sanitized):
+  - runtime_ms
+  - duration_ms
+  - latency_ms
+  - timing_ms
+  - perf_ms
+  - runtime_ns
+  - duration_ns
+  - latency_ns
 - dbl-core MUST NOT call Kernel.execute().
 - dbl-core MUST validate trace integrity only as:
   - sha256(canonical JSON bytes of sanitized trace mapping) == trace_digest

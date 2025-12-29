@@ -1,12 +1,15 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, ClassVar, Mapping, Optional
+from typing import Any, ClassVar
 
-from .canonical import canonicalize_value, freeze_value, json_dumps, digest_bytes
 from ..gate.model import GateDecision
+from .canonical import canonicalize_value, digest_bytes, freeze_value, json_dumps
+from .errors import InvalidEventError, InvalidTraceError
 from .trace_digest import trace_digest
+from ..normalize.trace import sanitize_trace
 
 
 class DblEventKind(str, Enum):
@@ -21,7 +24,7 @@ class DblEvent:
     event_kind: DblEventKind
     correlation_id: str
     data: Any = field(default_factory=dict)
-    observational: Optional[Mapping[str, Any]] = None
+    observational: Mapping[str, Any] | None = None
 
     DETERMINISTIC_FIELDS: ClassVar[tuple[str, ...]] = (
         "event_kind",
@@ -32,40 +35,54 @@ class DblEvent:
 
     def __post_init__(self) -> None:
         if not isinstance(self.correlation_id, str) or not self.correlation_id:
-            raise TypeError("correlation_id must be a non-empty string")
+            raise InvalidEventError("correlation_id must be a non-empty string")
 
         if isinstance(self.data, GateDecision):
-            canonicalize_value(self.data.to_dict(include_observational=True))
+            try:
+                canonicalize_value(self.data.to_dict(include_observational=True))
+            except Exception as exc:
+                raise InvalidEventError(str(exc)) from exc
         elif self.data is not None:
-            canonicalize_value(self.data)
+            try:
+                canonicalize_value(self.data)
+            except Exception as exc:
+                raise InvalidEventError(str(exc)) from exc
         if self.observational is not None:
-            canonicalize_value(self.observational)
+            try:
+                canonicalize_value(self.observational)
+            except Exception as exc:
+                raise InvalidEventError(str(exc)) from exc
 
         if self.event_kind == DblEventKind.DECISION:
             if isinstance(self.data, Mapping):
                 if len(self.data) == 0:
-                    raise TypeError("DECISION event data must be non-empty")
+                    raise InvalidEventError("DECISION event data must be non-empty")
             elif isinstance(self.data, GateDecision):
                 pass
             else:
-                raise TypeError("DECISION event data must be a Mapping or GateDecision")
+                raise InvalidEventError("DECISION event data must be a Mapping or GateDecision")
 
         if self.event_kind == DblEventKind.EXECUTION:
             if not isinstance(self.data, Mapping):
-                raise TypeError("EXECUTION event data must be a Mapping")
-            if "trace_digest" not in self.data or not isinstance(self.data["trace_digest"], str) or not self.data["trace_digest"]:
-                raise TypeError("EXECUTION event data requires trace_digest: non-empty str")
+                raise InvalidEventError("EXECUTION event data must be a Mapping")
+            if (
+                "trace_digest" not in self.data
+                or not isinstance(self.data["trace_digest"], str)
+                or not self.data["trace_digest"]
+            ):
+                raise InvalidTraceError("EXECUTION event data requires trace_digest: non-empty str")
             if "trace" not in self.data or not isinstance(self.data["trace"], Mapping):
-                raise TypeError("EXECUTION event data requires trace: Mapping")
+                raise InvalidTraceError("EXECUTION event data requires trace: Mapping")
 
             trace = self.data["trace"]
             try:
-                actual = trace_digest(trace)
+                sanitized = sanitize_trace(trace)
+                actual = trace_digest(sanitized)
             except Exception as exc:
-                raise TypeError(str(exc)) from exc
+                raise InvalidTraceError(str(exc)) from exc
 
             if actual != self.data["trace_digest"]:
-                raise TypeError("EXECUTION event trace_digest mismatch")
+                raise InvalidTraceError("EXECUTION event trace_digest mismatch")
 
         object.__setattr__(self, "data", freeze_value(self.data))
         if self.observational is not None:

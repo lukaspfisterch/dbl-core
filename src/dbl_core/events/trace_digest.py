@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-from typing import Any, Mapping
+from collections.abc import Mapping
+from typing import Any
 
-from .canonical import canonicalize_value, json_dumps, digest_bytes
+from .canonical import canonicalize_value, digest_bytes, json_dumps
 
 
 def trace_digest(trace_dict: Mapping[str, Any]) -> str:

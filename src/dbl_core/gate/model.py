@@ -1,14 +1,13 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional
 
 
 @dataclass(frozen=True)
 class GateDecision:
     decision: str  # "ALLOW" or "DENY"
     reason_code: str
-    reason_message: Optional[str] = None
+    reason_message: str | None = None
 
     def __post_init__(self) -> None:
         if self.decision not in ("ALLOW", "DENY"):

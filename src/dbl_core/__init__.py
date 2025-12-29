@@ -1,5 +1,5 @@
-from .events import DblEvent, DblEventKind
 from .behavior import BehaviorV
+from .events import DblEvent, DblEventKind
 from .gate import GateDecision
 from .normalize import normalize_trace
 

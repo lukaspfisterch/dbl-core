@@ -1,6 +1,7 @@
 import pytest
 
 from dbl_core import DblEvent, DblEventKind
+from dbl_core.events.errors import InvalidTraceError
 from dbl_core.events.trace_digest import trace_digest
 
 
@@ -25,7 +26,7 @@ def test_execution_event_wrong_trace_digest_raises():
         "trace": {"a": 1},
         "trace_digest": "bad",
     }
-    with pytest.raises(TypeError, match="trace_digest mismatch"):
+    with pytest.raises(InvalidTraceError, match="trace_digest mismatch"):
         DblEvent(DblEventKind.EXECUTION, correlation_id="c1", data=data)
 
 

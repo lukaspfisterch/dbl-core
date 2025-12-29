@@ -1,4 +1,4 @@
-from dbl_core import DblEvent, DblEventKind, BehaviorV
+from dbl_core import BehaviorV, DblEvent, DblEventKind
 
 
 def test_behavior_t_index():

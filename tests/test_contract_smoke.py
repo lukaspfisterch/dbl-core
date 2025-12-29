@@ -1,5 +1,6 @@
-from dbl_core import DblEvent, DblEventKind, BehaviorV, GateDecision, normalize_trace
 from kl_kernel_logic import Kernel, PsiDefinition
+
+from dbl_core import BehaviorV, DblEvent, DblEventKind, GateDecision, normalize_trace
 
 
 def test_contract_smoke():

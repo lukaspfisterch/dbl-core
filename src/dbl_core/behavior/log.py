@@ -1,15 +1,14 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Iterable, Tuple
 
-from ..events.canonical import json_dumps, digest_bytes
+from ..events.canonical import digest_bytes, json_dumps
 from ..events.model import DblEvent
 
 
 @dataclass(frozen=True)
 class BehaviorV:
-    events: Tuple[DblEvent, ...] = field(default_factory=tuple)
+    events: tuple[DblEvent, ...] = field(default_factory=tuple)
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "events", tuple(self.events))

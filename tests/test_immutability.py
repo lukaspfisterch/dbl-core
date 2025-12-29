@@ -1,8 +1,9 @@
-import pytest
 from dataclasses import FrozenInstanceError
 from types import MappingProxyType
 
-from dbl_core import DblEvent, DblEventKind, BehaviorV
+import pytest
+
+from dbl_core import BehaviorV, DblEvent, DblEventKind
 
 
 def test_immutability_event_and_behavior():

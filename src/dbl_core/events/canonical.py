@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
-from hashlib import sha256
 import json
+from collections.abc import Mapping
+from datetime import UTC, datetime
+from hashlib import sha256
 from types import MappingProxyType
-from typing import Any, Mapping
+from typing import Any
 
 _PRIMITIVE = (str, int, bool)
 
@@ -39,8 +40,8 @@ def freeze_value(value: Any) -> Any:
 
 def format_dt(value: datetime) -> str:
     if value.tzinfo is None:
-        value = value.replace(tzinfo=timezone.utc)
-    return value.astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
+        value = value.replace(tzinfo=UTC)
+    return value.astimezone(UTC).isoformat().replace("+00:00", "Z")
 
 
 def canonicalize_value(value: Any) -> Any:
