@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.2] - 2025-12-29
+
+- Typed error taxonomy for invalid events and traces
+- Trace sanitization enforced before trace digest validation
+- CI workflow for pytest, mypy, and ruff
+
 ## [0.3.1] - 2025-12-28
 
 - Documentation sync: canonicalization rejects non-str mapping keys and all floats
