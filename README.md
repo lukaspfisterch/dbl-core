@@ -3,7 +3,7 @@
 [![CI / Tests](https://github.com/lukaspfisterch/dbl-core/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/lukaspfisterch/dbl-core/actions/workflows/ci.yml)
 [![PyPI version](https://img.shields.io/pypi/v/dbl-core.svg?label=PyPI)](https://pypi.org/project/dbl-core/)
 [![Python >=3.11](https://img.shields.io/pypi/pyversions/dbl-core.svg?label=Python)](https://pypi.org/project/dbl-core/)
-[![Typing: Typed](https://img.shields.io/pypi/typing/dbl-core.svg?label=Typing)](https://pypi.org/project/dbl-core/)
+[![Typing: Typed](https://img.shields.io/badge/typing-typed-2d7f5e.svg)](https://pypi.org/project/dbl-core/)
 
 Current release: v0.3.2 (PyPI).
 
