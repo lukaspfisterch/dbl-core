@@ -131,5 +131,5 @@ dbl-core MAY raise typed errors, but must at minimum distinguish:
 - Replaying V in order MUST yield the same normative projection (DECISION subsequence), independent of observational variation.
 
 ## Normative References
-- KL Kernel Logic (library dependency)
-- DBL Paper (conceptual model and invariants)
+- [KL Kernel Logic](https://github.com/lukaspfisterch/kl-kernel-logic) (library dependency)
+- [DBL Paper](https://github.com/lukaspfisterch/dbl-paper) (conceptual model and invariants)
