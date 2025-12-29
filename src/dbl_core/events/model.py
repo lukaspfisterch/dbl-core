@@ -6,10 +6,10 @@ from enum import Enum
 from typing import Any, ClassVar
 
 from ..gate.model import GateDecision
+from ..normalize.trace import sanitize_trace
 from .canonical import canonicalize_value, digest_bytes, freeze_value, json_dumps
 from .errors import InvalidEventError, InvalidTraceError
 from .trace_digest import trace_digest
-from ..normalize.trace import sanitize_trace
 
 
 class DblEventKind(str, Enum):

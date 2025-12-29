@@ -1,5 +1,10 @@
 # DBL Core
 
+[![CI / Tests](https://github.com/lukaspfisterch/dbl-core/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/lukaspfisterch/dbl-core/actions/workflows/ci.yml)
+[![PyPI version](https://img.shields.io/pypi/v/dbl-core.svg?label=PyPI)](https://pypi.org/project/dbl-core/)
+[![Python >=3.11](https://img.shields.io/pypi/pyversions/dbl-core.svg?label=Python)](https://pypi.org/project/dbl-core/)
+[![Typing: Typed](https://img.shields.io/pypi/typing/dbl-core.svg?label=Typing)](https://pypi.org/project/dbl-core/)
+
 DBL Core is a deterministic event substrate for the Deterministic Boundary Layer (DBL). It records intent, decisions, and executions as a single ordered stream.
 
 ## Why DBL Core exists
