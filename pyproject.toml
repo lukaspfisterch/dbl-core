@@ -69,3 +69,4 @@ mypy_path = ["src"]
 strict = true
 warn_unreachable = true
 show_error_codes = true
+
