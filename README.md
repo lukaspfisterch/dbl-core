@@ -81,6 +81,7 @@ Requires kl-kernel-logic>=0.5.0 and Python 3.11+.
 - BehaviorV
 - GateDecision
 - normalize_trace
+  normalize_trace is a canonicalization adapter only. It must not infer, repair, or interpret traces.
 
 ## Ordering
 Ordering is derived from t_index (position in V). Timestamps and runtime fields are observational only.

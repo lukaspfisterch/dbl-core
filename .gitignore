@@ -49,3 +49,5 @@ Thumbs.db
 
 # Repo-specific
 INVENTORY.md
+.venv/
+.venv-py311/

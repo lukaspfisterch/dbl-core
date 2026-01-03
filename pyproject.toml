@@ -20,18 +20,30 @@ classifiers = [
   "Programming Language :: Python :: 3.12",
   "Typing :: Typed",
 ]
-dependencies = ["kl-kernel-logic>=0.5.0,<0.6.0"]
+dependencies = [
+  "kl-kernel-logic>=0.5.0,<0.6.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8,<9",
+  "ruff>=0.5,<1",
+  "mypy>=1.10,<2",
+]
 
 [project.urls]
+Homepage = "https://github.com/lukaspfisterch/dbl-core"
 Repository = "https://github.com/lukaspfisterch/dbl-core"
 Issues = "https://github.com/lukaspfisterch/dbl-core/issues"
 
 [tool.setuptools]
 package-dir = { "" = "src" }
+license-files = ["LICENSE"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
 include = ["dbl_core*"]
+exclude = ["tests*", "docs*", "scripts*"]
 
 [tool.setuptools.package-data]
 dbl_core = ["py.typed"]
