@@ -1,4 +1,4 @@
-# DBL Core Contract (v0.3.x)
+# DBL Core Contract (v0.3.3)
 
 This contract defines the deterministic event substrate for DBL Core.
 It is normative for dbl-core and contract-stable.
@@ -45,6 +45,10 @@ dbl-core does not provide:
 - PROOF: records evidence artifacts (observational).
 
 Only DECISION is normative. All other kinds are non-normative.
+
+DECISION deterministic payload MAY include optional field:
+- anchors_used: list of anchor references with anchor_id and anchor_type.
+  This field is deterministic attribution only and does not add policy semantics.
 
 ## DENY is a DECISION
 - DENY MUST be represented as a DECISION event.

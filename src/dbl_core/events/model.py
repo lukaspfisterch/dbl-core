@@ -6,6 +6,7 @@ from enum import Enum
 from typing import Any, ClassVar
 
 from ..gate.model import GateDecision
+from ..anchors import normalize_anchor_refs
 from ..normalize.trace import sanitize_trace
 from .canonical import canonicalize_value, digest_bytes, freeze_value, json_dumps
 from .errors import InvalidEventError, InvalidTraceError
@@ -37,14 +38,21 @@ class DblEvent:
         if not isinstance(self.correlation_id, str) or not self.correlation_id:
             raise InvalidEventError("correlation_id must be a non-empty string")
 
+        data_value = self.data
+        if self.event_kind == DblEventKind.DECISION and isinstance(self.data, Mapping):
+            if "anchors_used" in self.data:
+                normalized = normalize_anchor_refs(self.data["anchors_used"])
+                data_value = dict(self.data)
+                data_value["anchors_used"] = normalized
+
         if isinstance(self.data, GateDecision):
             try:
                 canonicalize_value(self.data.to_dict(include_observational=True))
             except Exception as exc:
                 raise InvalidEventError(str(exc)) from exc
-        elif self.data is not None:
+        elif data_value is not None:
             try:
-                canonicalize_value(self.data)
+                canonicalize_value(data_value)
             except Exception as exc:
                 raise InvalidEventError(str(exc)) from exc
         if self.observational is not None:
@@ -54,8 +62,8 @@ class DblEvent:
                 raise InvalidEventError(str(exc)) from exc
 
         if self.event_kind == DblEventKind.DECISION:
-            if isinstance(self.data, Mapping):
-                if len(self.data) == 0:
+            if isinstance(data_value, Mapping):
+                if len(data_value) == 0:
                     raise InvalidEventError("DECISION event data must be non-empty")
             elif isinstance(self.data, GateDecision):
                 pass
@@ -84,7 +92,7 @@ class DblEvent:
             if actual != self.data["trace_digest"]:
                 raise InvalidTraceError("EXECUTION event trace_digest mismatch")
 
-        object.__setattr__(self, "data", freeze_value(self.data))
+        object.__setattr__(self, "data", freeze_value(data_value))
         if self.observational is not None:
             object.__setattr__(self, "observational", freeze_value(self.observational))
 
