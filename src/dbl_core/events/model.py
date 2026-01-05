@@ -41,7 +41,10 @@ class DblEvent:
         data_value = self.data
         if self.event_kind == DblEventKind.DECISION and isinstance(self.data, Mapping):
             if "anchors_used" in self.data:
-                normalized = normalize_anchor_refs(self.data["anchors_used"])
+                try:
+                    normalized = normalize_anchor_refs(self.data["anchors_used"])
+                except Exception as exc:
+                    raise InvalidEventError(str(exc)) from exc
                 data_value = dict(self.data)
                 data_value["anchors_used"] = normalized
 
