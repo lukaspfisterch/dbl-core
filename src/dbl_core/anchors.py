@@ -17,7 +17,9 @@ class AnchorRef:
         if not isinstance(self.anchor_id, str) or not self.anchor_id.strip():
             raise InvalidEventError("anchor_id must be a non-empty string")
         if self.anchor_type not in ("axiom", "maxim", "invariant", "primitive"):
-            raise InvalidEventError("anchor_type must be one of: axiom, maxim, invariant, primitive")
+            raise InvalidEventError(
+                "anchor_type must be one of: axiom, maxim, invariant, primitive"
+            )
 
     def to_dict(self) -> dict[str, Any]:
         return {
