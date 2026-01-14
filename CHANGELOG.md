@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.6] - 2026-01-14
+
+- Added decision anchor attribution: `anchors_used` now normalizes and deduplicates anchor references to keep DECISION digests deterministic, with `AnchorRef` and `AnchorType` exported publicly.
+- Hardened anchor validation: precise TypeError/ValueError surfaces are wrapped as InvalidEventError when constructing DECISION events.
+- Documentation and badges refreshed to match the current public API.
+
 ## [0.3.2] - 2025-12-29
 
 - Typed error taxonomy for invalid events and traces
