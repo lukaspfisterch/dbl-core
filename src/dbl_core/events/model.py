@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import dataclass, field
-from enum import Enum
+from enum import StrEnum
 from typing import Any, ClassVar
 
 from ..gate.model import GateDecision
@@ -13,7 +13,7 @@ from .errors import InvalidEventError, InvalidTraceError
 from .trace_digest import trace_digest
 
 
-class DblEventKind(str, Enum):
+class DblEventKind(StrEnum):
     INTENT = "INTENT"
     DECISION = "DECISION"
     EXECUTION = "EXECUTION"
