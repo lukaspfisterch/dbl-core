@@ -13,7 +13,7 @@ DBL Core exists to provide a deterministic, audit-stable event substrate for sys
 
 - intent from decision
 - decision from execution
-- normative history from observational artifacts
+- authoritative history from observational artifacts
 
 It is designed for systems where replayability, auditability, and governance correctness matter more than convenience or performance.
 
@@ -23,7 +23,7 @@ DBL Core maintains a single append-only event stream V:
 
 INTENT → DECISION → (optional) EXECUTION → (optional) PROOF
 
-Only DECISION events are normative.
+Only DECISION events are authoritative.
 All other data is treated as observational and excluded from digests.
 
 ## Scope
@@ -54,7 +54,7 @@ implement a domainrunner on top of DBL Core.
 
 ## Contract-first design
 
-DBL Core behavior is defined by a stable, normative contract.
+DBL Core behavior is defined by a stable, authoritative contract.
 
 - Code must conform to the contract.
 - Tests enforce contract invariants.

@@ -1,13 +1,13 @@
 # DBL Core Contract (v0.3.6)
 
 This contract defines the deterministic event substrate for DBL Core.
-It is normative for dbl-core and contract-stable.
+It is authoritative for dbl-core and contract-stable.
 
 ## Scope
 dbl-core provides:
 - A minimal DBL event model (INTENT, DECISION, EXECUTION, PROOF).
 - Deterministic canonicalization and digests.
-- An append-only ordered behavior stream V with deterministic replay of the normative projection.
+- An append-only ordered behavior stream V with deterministic replay of the authoritative projection.
 
 dbl-core does not provide:
 - Policy semantics, templates, orchestration, or execution.
@@ -40,11 +40,11 @@ dbl-core does not provide:
 
 ## Event Kinds
 - INTENT: records proposed execution context and authoritative input descriptors.
-- DECISION: records a normative decision outcome.
+- DECISION: records an authoritative decision outcome.
 - EXECUTION: records an execution trace artifact (observational).
 - PROOF: records evidence artifacts (observational).
 
-Only DECISION is normative. All other kinds are non-normative.
+Only DECISION is authoritative. All other kinds are non-authoritative.
 
 DECISION deterministic payload MAY include optional field:
 - anchors_used: list of anchor references with anchor_id (non-empty str) and anchor_type
@@ -133,7 +133,7 @@ dbl-core MAY raise typed errors, but must at minimum distinguish:
 ## Determinism Guarantees
 - Changing observational fields MUST NOT change event digests.
 - Changing observational fields MUST NOT change BehaviorV digest.
-- Replaying V in order MUST yield the same normative projection (DECISION subsequence), independent of observational variation.
+- Replaying V in order MUST yield the same authoritative projection (DECISION subsequence), independent of observational variation.
 
 ## Normative References
 - [KL Kernel Logic](https://github.com/lukaspfisterch/kl-kernel-logic) (library dependency)

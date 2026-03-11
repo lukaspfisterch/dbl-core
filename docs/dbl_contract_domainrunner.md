@@ -93,7 +93,7 @@ These signals are domainrunner-defined. dbl-core MUST NOT implement or interpret
 
 ### Replay requirement
 A stress runner may require:
-- normative replay from V alone
+- authoritative replay from V alone
 - deterministic reconstruction of the DECISION sequence
 - no dependence on EXECUTION outputs for governance correctness
 
